@@ -29,24 +29,24 @@ export class PetsController {
       throw new BadRequestException('ID must be a valid number');
     }
 
-    const vehicle = await this.petServise.findOne(parsedId);
+    const pets = await this.petServise.findOne(parsedId);
 
-    if (!vehicle) {
+    if (!pets) {
       throw new NotFoundException(`Pets with ID ${parsedId} not found`);
     }
 
-    return vehicle;
+    return pets;
   }
 
   @Post()
-  async create(@Body() vehicle: Pets): Promise<Pets> {
-    return this.petServise.create(vehicle);
+  async create(@Body() pets: Pets): Promise<Pets> {
+    return this.petServise.create(pets);
   }
 
   @Put(':id')
   async update(
     @Param('id') id: string,
-    @Body() vehicle: Pets,
+    @Body() pets: Pets,
   ): Promise<Pets | null> {
     const parsedId = Number(id);
 
@@ -54,7 +54,7 @@ export class PetsController {
       throw new BadRequestException('ID must be a valid number');
     }
 
-    const vehicleUpdated = await this.petServise.update(parsedId, vehicle);
+    const vehicleUpdated = await this.petServise.update(parsedId, pets);
 
     if (!vehicleUpdated) {
       throw new NotFoundException(`Pets with ID ${parsedId} not found`);
