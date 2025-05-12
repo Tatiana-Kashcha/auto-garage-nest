@@ -9,62 +9,62 @@ import {
   BadRequestException,
   NotFoundException,
 } from '@nestjs/common';
-import { PetsService } from './pets.service';
-import { Pets } from './entities/pets.entity';
+import { UsersService } from './users.service';
+import { User } from './entities/user.entity';
 
-@Controller('pets')
-export class PetsController {
-  constructor(private readonly petServise: PetsService) {}
+@Controller('users')
+export class UsersController {
+  constructor(private readonly usersService: UsersService) {}
 
   @Post()
-  async create(@Body() pets: Pets): Promise<Pets> {
-    return this.petServise.create(pets);
+  async create(@Body() user: User): Promise<User> {
+    return this.usersService.create(user);
   }
 
   @Get()
-  async findAll(): Promise<Pets[]> {
-    return this.petServise.findAll();
+  async findAll(): Promise<User[]> {
+    return this.usersService.findAll();
   }
 
   @Get(':id')
-  async findOne(@Param('id') id: string): Promise<Pets | null> {
+  async findOne(@Param('id') id: string): Promise<User | null> {
     const parsedId = Number(id);
 
     if (isNaN(parsedId)) {
       throw new BadRequestException('ID must be a valid number');
     }
 
-    const pets = await this.petServise.findOne(parsedId);
+    const user = await this.usersService.findOne(parsedId);
 
-    if (!pets) {
+    if (!user) {
       throw new NotFoundException(`Pets with ID ${parsedId} not found`);
     }
 
-    return pets;
+    return user;
   }
 
   @Put(':id')
   async update(
     @Param('id') id: string,
-    @Body() pets: Pets,
-  ): Promise<Pets | null> {
+    @Body() pets: User,
+  ): Promise<User | null> {
     const parsedId = Number(id);
 
     if (isNaN(parsedId)) {
       throw new BadRequestException('ID must be a valid number');
     }
 
-    const petsUpdated = await this.petServise.update(parsedId, pets);
+    const userUpdated = await this.usersService.update(parsedId, pets);
 
-    if (!petsUpdated) {
+    if (!userUpdated) {
       throw new NotFoundException(`Pets with ID ${parsedId} not found`);
     }
 
-    return petsUpdated;
+    return userUpdated;
   }
 
   @Delete(':id')
   async remove(@Param('id') id: string): Promise<void> {
-    return this.petServise.remove(+id);
+    return this.usersService.remove(+id);
   }
 }
