@@ -6,11 +6,14 @@ export class User {
   id: number;
 
   @Column()
-  name: string;
-
-  @Column()
   email: string;
 
   @Column()
-  phone: number;
+  password: string;
+
+  @Column()
+  name: string;
+
+  @Column({ default: () => 'CURRENT_TIMESTAMP' })
+  createdAt: Date;
 }
