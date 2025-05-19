@@ -10,24 +10,32 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
-import { User } from './entities/user.entity';
+import { CreateUserDto } from './dto/create-user.dto';
+import { UserResponseDto } from './dto/user-response.dto';
+import { UpdateUserDto } from './dto/update-user.dto';
 
 @Controller('users')
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
   @Post()
-  async create(@Body() user: User): Promise<User> {
-    return this.usersService.create(user);
+  async create(@Body() createUserDto: CreateUserDto): Promise<UserResponseDto> {
+    return this.usersService.create(createUserDto);
   }
 
   @Get()
-  async findAll(): Promise<User[]> {
+  async findAll(): Promise<UserResponseDto[]> {
     return this.usersService.findAll();
   }
 
+  // для перевірки хешування паролів
+  @Get('hash')
+  async testHash(): Promise<void> {
+    return this.usersService.testHash();
+  }
+
   @Get(':id')
-  async findOne(@Param('id') id: string): Promise<User | null> {
+  async findOne(@Param('id') id: string): Promise<UserResponseDto | null> {
     const parsedId = Number(id);
 
     if (isNaN(parsedId)) {
@@ -37,7 +45,7 @@ export class UsersController {
     const user = await this.usersService.findOne(parsedId);
 
     if (!user) {
-      throw new NotFoundException(`Pets with ID ${parsedId} not found`);
+      throw new NotFoundException(`User with ID ${parsedId} not found`);
     }
 
     return user;
@@ -46,18 +54,18 @@ export class UsersController {
   @Put(':id')
   async update(
     @Param('id') id: string,
-    @Body() pets: User,
-  ): Promise<User | null> {
+    @Body() user: UpdateUserDto,
+  ): Promise<UserResponseDto | null> {
     const parsedId = Number(id);
 
     if (isNaN(parsedId)) {
       throw new BadRequestException('ID must be a valid number');
     }
 
-    const userUpdated = await this.usersService.update(parsedId, pets);
+    const userUpdated = await this.usersService.update(parsedId, user);
 
     if (!userUpdated) {
-      throw new NotFoundException(`Pets with ID ${parsedId} not found`);
+      throw new NotFoundException(`User with ID ${parsedId} not found`);
     }
 
     return userUpdated;
