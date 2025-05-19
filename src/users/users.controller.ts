@@ -28,6 +28,12 @@ export class UsersController {
     return this.usersService.findAll();
   }
 
+  // для перевірки хешування паролів
+  @Get('hash')
+  async testHash(): Promise<void> {
+    return this.usersService.testHash();
+  }
+
   @Get(':id')
   async findOne(@Param('id') id: string): Promise<UserResponseDto | null> {
     const parsedId = Number(id);

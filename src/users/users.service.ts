@@ -5,7 +5,7 @@ import { User } from './entities/user.entity';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UserResponseDto } from './dto/user-response.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
-import { log } from 'console';
+import * as bcrypt from 'bcrypt';
 
 @Injectable()
 export class UsersService {
@@ -15,10 +15,14 @@ export class UsersService {
   ) {}
 
   async create(createUserDto: CreateUserDto): Promise<UserResponseDto> {
-    const newUser = this.usersRepository.create(createUserDto);
-    const savedUser = await this.usersRepository.save(newUser);
+    const hashedPassword = await bcrypt.hash(createUserDto.password, 10);
 
-    console.log(savedUser);
+    const newUser = this.usersRepository.create({
+      ...createUserDto,
+      password: hashedPassword,
+    });
+
+    const savedUser = await this.usersRepository.save(newUser);
 
     const { id, email, name } = savedUser;
     return { id, email, name };
@@ -26,8 +30,6 @@ export class UsersService {
 
   async findAll(): Promise<UserResponseDto[]> {
     const users = await this.usersRepository.find();
-
-    console.log(users);
 
     return users.map(({ id, email, name }) => ({
       id,
@@ -49,13 +51,16 @@ export class UsersService {
 
   async update(
     id: number,
-    user: UpdateUserDto,
+    updateUserDto: UpdateUserDto,
   ): Promise<UserResponseDto | null> {
-    await this.usersRepository.update(id, user);
+    const hashedPassword = await bcrypt.hash(updateUserDto.password, 10);
+    await this.usersRepository.update(id, {
+      ...updateUserDto,
+      password: hashedPassword,
+    });
+
     const options: FindOneOptions<User> = { where: { id } };
     const userUpdated = await this.usersRepository.findOne(options);
-
-    console.log(userUpdated);
 
     if (!userUpdated) {
       return null;
@@ -66,5 +71,15 @@ export class UsersService {
 
   async remove(id: number): Promise<void> {
     await this.usersRepository.delete(id);
+  }
+
+  // для перевірки хешування паролів
+  async testHash(): Promise<void> {
+    const passwords = ['abc123', 'abc123', 'abc123'];
+
+    for (const pw of passwords) {
+      const hash = await bcrypt.hash(pw, 10);
+      console.log(hash);
+    }
   }
 }
