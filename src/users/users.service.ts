@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, ConflictException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, FindOneOptions } from 'typeorm';
 import { User } from './entities/user.entity';
@@ -15,6 +15,14 @@ export class UsersService {
   ) {}
 
   async create(createUserDto: CreateUserDto): Promise<UserResponseDto> {
+    const existingUser = await this.usersRepository.findOne({
+      where: { email: createUserDto.email },
+    });
+
+    if (existingUser) {
+      throw new ConflictException('Email already exists');
+    }
+
     const hashedPassword = await bcrypt.hash(createUserDto.password, 10);
 
     const newUser = this.usersRepository.create({
@@ -22,10 +30,16 @@ export class UsersService {
       password: hashedPassword,
     });
 
-    const savedUser = await this.usersRepository.save(newUser);
-
-    const { id, email, name } = savedUser;
-    return { id, email, name };
+    try {
+      const savedUser = await this.usersRepository.save(newUser);
+      const { id, email, name } = savedUser;
+      return { id, email, name };
+    } catch (error) {
+      if (error.code === 'SQLITE_CONSTRAINT') {
+        throw new ConflictException('Email already exists');
+      }
+      throw error;
+    }
   }
 
   async findAll(): Promise<UserResponseDto[]> {
@@ -53,6 +67,16 @@ export class UsersService {
     id: number,
     updateUserDto: UpdateUserDto,
   ): Promise<UserResponseDto | null> {
+    if (updateUserDto.email) {
+      const existingUser = await this.usersRepository.findOne({
+        where: { email: updateUserDto.email },
+      });
+
+      if (existingUser && existingUser.id !== id) {
+        throw new ConflictException('Email is already in use by another user');
+      }
+    }
+
     const hashedPassword = await bcrypt.hash(updateUserDto.password, 10);
     await this.usersRepository.update(id, {
       ...updateUserDto,
