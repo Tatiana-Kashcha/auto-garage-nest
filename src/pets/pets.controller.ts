@@ -16,6 +16,11 @@ import { Pets } from './entities/pets.entity';
 export class PetsController {
   constructor(private readonly petServise: PetsService) {}
 
+  @Post()
+  async create(@Body() pets: Pets): Promise<Pets> {
+    return this.petServise.create(pets);
+  }
+
   @Get()
   async findAll(): Promise<Pets[]> {
     return this.petServise.findAll();
@@ -38,11 +43,6 @@ export class PetsController {
     return pets;
   }
 
-  @Post()
-  async create(@Body() pets: Pets): Promise<Pets> {
-    return this.petServise.create(pets);
-  }
-
   @Put(':id')
   async update(
     @Param('id') id: string,
@@ -54,13 +54,13 @@ export class PetsController {
       throw new BadRequestException('ID must be a valid number');
     }
 
-    const vehicleUpdated = await this.petServise.update(parsedId, pets);
+    const petsUpdated = await this.petServise.update(parsedId, pets);
 
-    if (!vehicleUpdated) {
+    if (!petsUpdated) {
       throw new NotFoundException(`Pets with ID ${parsedId} not found`);
     }
 
-    return vehicleUpdated;
+    return petsUpdated;
   }
 
   @Delete(':id')
