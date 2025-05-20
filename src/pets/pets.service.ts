@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, FindOneOptions } from 'typeorm'; // Import FindOneOptions
+import { Repository, FindOneOptions } from 'typeorm';
 import { Pets } from './entities/pets.entity';
 
 @Injectable()
@@ -10,17 +10,17 @@ export class PetsService {
     private petsRepository: Repository<Pets>,
   ) {}
 
+  async create(pets: Pets): Promise<Pets> {
+    return this.petsRepository.save(pets);
+  }
+
   async findAll(): Promise<Pets[]> {
     return this.petsRepository.find();
   }
 
   async findOne(id: number): Promise<Pets | null> {
-    const options: FindOneOptions<Pets> = { where: { id } }; // Construct FindOneOptions
+    const options: FindOneOptions<Pets> = { where: { id } };
     return this.petsRepository.findOne(options);
-  }
-
-  async create(pets: Pets): Promise<Pets> {
-    return this.petsRepository.save(pets);
   }
 
   async update(id: number, pets: Pets): Promise<Pets | null> {
